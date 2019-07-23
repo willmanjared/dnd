@@ -42,7 +42,7 @@ const Discord = require('discord.js');
 const bot = new Discord.Client();
 let usr; // defined when user interacts with server
 let champs; // defined when user interacts with server
-//let usr_session; // defined when user sends a message
+//let usr_session; 
 
 const token = 'NTkyMDY2MDEzMTM5NDM1NTUw.XQ6BYw.29KJxHNavYwIiC_2Jkl-OF5NJrE';
 
@@ -225,14 +225,6 @@ con.connect(function(err) {
 
 
 
-
-
-
-
-
-
-
-
 /*
 
 function run() {
@@ -275,22 +267,6 @@ run();
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 bot.on('ready', () => {
   console.log("Bot is online");
 });
@@ -316,47 +292,54 @@ bot.on('presenceUpdate', member => {
 
 
 bot.on('message', msag => {
+      
+      if (msag.author.bot) return;
   
       usr = null;
       champs = null;
-  
-      con.query('SELECT id,discord_id FROM user WHERE discord_id=' + msag.author.id + '', function (error, results, fields) {
+
+      con.query('SELECT id,discord_id FROM user WHERE discord_id=' + msag.author.id + ';', function (error, results, fields) {
       if (error) throw error;
 
+      
+        //console.log(results);
+        
+        
       results = JSON.parse(JSON.stringify(results));
       usr = results[0];
+        
+        //console.log(usr.id);
 
       let args = msag.content.substring(PREFIX.length).split(' ');
                     
                     
-      con.query('SELECT * FROM champ WHERE user_id=1', function (error, results, fields) {
+      con.query('SELECT * FROM champ WHERE user_id='+ usr.id, function (error, results, fields) {
           if (error) throw error;
           let i = 0;
           champs = JSON.parse(JSON.stringify(results));
           
-          const c = champs.length;
+          let c = champs.length;
     
-          console.log(c);
+          //console.log(c);
     
           champs.forEach(champ => {
-              con.query('SELECT * FROM attributes WHERE champ_id='+champ.id+'; SELECT * FROM throws WHERE champ_id='+champ.id, function (error, results, fields) {
+            
+              con.query('SELECT * FROM class WHERE champ_id='+champ.id+'; SELECT * FROM attributes WHERE champ_id='+champ.id+'; SELECT * FROM throws WHERE champ_id='+champ.id+'; SELECT * FROM wallet WHERE champ_id='+champ.id+';', function (error, results, fields) {
                 if (error) throw error;
                 let attr = JSON.parse(JSON.stringify(results));
-                champs[i].attr = attr[0][0];
-                champs[i].throw = attr[1][0];
+                champs[i].class = attr[0][0];
+                champs[i].attributes = attr[1][0];
+                champs[i].throw = attr[2][0];
+                champs[i].wallet = attr[3][0];
 
                 
                 i++;
                 
                 if (i == c) {
                   
-                  console.log(champs);
-                  console.log("bot response");
+                  //console.log(champs);
 
-                    //console.log(usr);
-                    //console.log(usr.id);
-                    //console.log(args,usr,msag);
-                    bot_response(args, usr, msag);
+                  bot_response(args, usr, msag);
                   
                   
                 }
@@ -366,7 +349,7 @@ bot.on('message', msag => {
       });
         
     });
-            
+          
   });
   
 });
@@ -394,11 +377,16 @@ bot.on('message', msag=> {
 });
   */
 
-function bot_response(arg,user,msg) {
+function bot_response(args,user,msg) {
   
   const patt = '/(?=.)^\$?(([1-9][0-9]{0,2}(,[0-9]{3})*)|0)?(\.[0-9]{1,2})?$/';
-  let ini_val = arg[0];
+  let ini_val = args[0];
+  
+  //msg.reply('bot response');
+  console.log("bot response");
+
     switch(ini_val) {
+        
       case 'wallet':
         
         if (args[1]) {
@@ -457,173 +445,63 @@ function bot_response(arg,user,msg) {
         }
         break;
      case 'characters':
-        msg.reply("List all champs");
-        /*
-        con.query('SELECT * FROM champ WHERE id=' + usr.id + '', function (error, results, fields) {
-          if (error) throw error;
-          // connected!
-          champs = JSON.parse(JSON.stringify(results));
-          console.log(champs[0]);
-          
-          get_champ_props(msg,champs[0]);
-        });
-        */
+        //let c = JSON.stringify(champs); msg.reply(c);
+        //msg.reply("something");
+        list_all_char_stats(champs,msg);
         break;
      case 'character':
-        msg.reply('display single character properties');
+        msg.reply("list selected character");
+        if(args[1]) {
+          switch(args[1]) {
+              case 'create':
+                msg.reply("start creating a character");
+              break;
+          }
+        }
+        
         break;
 
     }
-  
-}
-/*
-function get_champ_props(msg, champ) {
-  
-  //msg.reply("getting champ properties:");
-  console.log("getting champ properites");
-  var c = {};
-  c.champ = champ;
-  c.attributes = get_attr_by_id(champ.id);
-  console.log(c);
-  
+
   
 }
 
-function get_attr_by_id(id) {
+function list_all_char_stats(chars,msg) {
   
-  var a;
+  let c = chars.length;
+  let i = 0;
+  let mes = "\n";
   
-  con.query('SELECT * FROM attributes WHERE champ_id=' + id + '', function (error, results, fields) {
-    if (error) throw error;
-    var b = JSON.parse(JSON.stringify(results));
-    a = b[0];
-    //return a;
+  chars.forEach(char => {
+    
+    i++;
+     
+     Object.keys(char).forEach(function(key,index) {
+
+       if(typeof char[key] === 'object') {
+
+         mes += key.toUpperCase() + "\n";
+         
+         Object.keys(char[key]).forEach(function(k,ind) {
+           if (k !== "id" && k !== "champ_id") {
+            mes += "    "+ k + ": " + char[key][k] + "\n";
+           }
+           
+         });
+         
+       }
+       
+    });
+    
+   if(c == i) {
+     
+     //console.log(c,i);
+     msg.reply(mes);
+     
+   }
+    
   });
-  return a;
-}
-*/
-
-
-
-
-
-
-/*
-
-
-function run() {
-  let connection;
-  mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "password",
-    database: "dnd"
-  }).then((conn) => {
-    connection = conn;
-
-    return connection.query('select * from champ');
-  }).then((champ) => {
-    console.log(champ);
-        champ.forEach(employee => {
-            console.log(`The champ with the champ id: ${champ.id} is named: ${champ.name}`);
-        });
-
-        connection.end();
-  });
-}
-
-async function runAwait() {
-    const connection = await mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "password",
-    database: "dnd"
-    });
-
-    const champ = await connection.query('select * from champ');
-
-    champ.forEach(champ => {
-        console.log(`The champ with the champ id: ${champ.id} is named: ${champ.name}`);
-    });
-
-    connection.end();
-}
-
-//run();
-runAwait();
-
-
-
-console.log("this comes after");
-*/
-
-/*
-function run() {
-  let connection;
-  mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "password",
-    database: "dnd"
-  }).then((conn) => {
-    connection = conn;
-
-    return connection.query('select * from champ where user_id=1');
-  }).then((champ) => {
-    
-    champ = JSON.parse(JSON.stringify(champ));
-    
-    champ.forEach(champ => {
-            //console.log(`The champ with the champ id: ${champ.id} is named: ${champ.name}`);
-          console.log(champ.id);
-          const atts = connection.query('select * from attributes where champ_id='+ champ.id );
-          console.log(atts);
-        });
-    
-    console.log(champ);
-    
-
-        connection.end();
-  }).catch(function (err) {
-      console.log(err);
-    });
-}
-
-run();
-
-*/
-
-/*
-async function runAwait() {
-    const connection = await mysql.createConnection({
-    host: "localhost",
-    user: "root",
-    password: "password",
-    database: "dnd"
-    });
-
-    const champ = await connection.query('select * from champ where user_id=1');
-
-    champ.forEach(champ => {
-      
-        
-        //console.log(`The champ with the champ id: ${champ.id} is named: ${champ.name}`);
-      
-        
-      const atts = await connection.query('select * from champ where champ_id=${champ.id}');
-      
-      console.log(atts);
-      
-      
-    });
   
-    console.log(JSON.parse(JSON.stringify(champ)));
-
-    connection.end();
 }
-
-runAwait();
-
-*/
 
 bot.login(token);
