@@ -1,63 +1,16 @@
-/*const http = require('http');
-
-const hostname = 'localhost';
-const port = 3000;
-
-const server = http.createServer((req, res) => {
-  res.statusCode = 200;
-  res.setHeader('Content-Type', 'text/plain');
-  res.end('Hello World!\n');
-});
-
-server.listen(port, hostname, () => {
-  console.log(`Server running at http://${hostname}:${port}/`);
-});
-*/
-
-
-/* MYSQL STARTER CODE
-*****************************
-
-
-var mysql = require('mysql');
-
-var con = mysql.createConnection({
-  host: "localhost",
-  user: "yourusername",
-  password: "yourpassword"
-});
-
-con.connect(function(err) {
-  if (err) throw err;
-  console.log("Connected!");
-});
-
-*****************************
-
-*/
-
-
 const mysql = require('mysql');
 const Discord = require('discord.js');
+const lodash = require('lodash');
 const bot = new Discord.Client();
 let usr; // defined when user interacts with server
 let champs; // defined when user interacts with server
 //let usr_session; 
 
-const token = 'NTkyMDY2MDEzMTM5NDM1NTUw.XQ6BYw.29KJxHNavYwIiC_2Jkl-OF5NJrE';
+const token = 'NTkyMDY2MDEzMTM5NDM1NTUw.XTeX9w.i4chLDnc0D4dVc417NOP6ZVgvWQ';
 
 // bot.on('',);
 const PREFIX = '/';
 
-
-
-/*
-let wallet = {
-  coin: 5.55,
-  exp: 270,
-  renown: 6
-};
-*/
 
 let champ = {
   class: {
@@ -225,48 +178,6 @@ con.connect(function(err) {
 
 
 
-/*
-
-function run() {
-
-    con.query('SELECT * FROM champ WHERE user_id=1', function (error, results, fields) {
-          if (error) throw error;
-          let i = 0;
-          champs = JSON.parse(JSON.stringify(results));
-          
-          const c = champs.length;
-    
-          console.log(c);
-    
-          champs.forEach(champ => {
-              con.query('SELECT * FROM attributes WHERE champ_id='+champ.id+'; SELECT * FROM throws WHERE champ_id='+champ.id, function (error, results, fields) {
-                if (error) throw error;
-                let attr = JSON.parse(JSON.stringify(results));
-                champs[i].attr = attr[0][0];
-                champs[i].throw = attr[1][0];
-
-                
-                i++;
-                
-                if (i == c) {
-                  console.log(champs);
-                  console.log("bot response");
-                }
-            });
-
-          });
-    
-        });
-}
-
-run();
-
-
-
-*/
-
-
-
 bot.on('ready', () => {
   console.log("Bot is online");
 });
@@ -298,17 +209,12 @@ bot.on('message', msag => {
       usr = null;
       champs = null;
 
-      con.query('SELECT id,discord_id FROM user WHERE discord_id=' + msag.author.id + ';', function (error, results, fields) {
+      con.query('SELECT id,discord_id,selected_champ FROM user WHERE discord_id=' + msag.author.id + ';', function (error, results, fields) {
       if (error) throw error;
-
-      
-        //console.log(results);
         
         
       results = JSON.parse(JSON.stringify(results));
       usr = results[0];
-        
-        //console.log(usr.id);
 
       let args = msag.content.substring(PREFIX.length).split(' ');
                     
@@ -320,24 +226,21 @@ bot.on('message', msag => {
           
           let c = champs.length;
     
-          //console.log(c);
-    
           champs.forEach(champ => {
             
-              con.query('SELECT * FROM class WHERE champ_id='+champ.id+'; SELECT * FROM attributes WHERE champ_id='+champ.id+'; SELECT * FROM throws WHERE champ_id='+champ.id+'; SELECT * FROM wallet WHERE champ_id='+champ.id+';', function (error, results, fields) {
+              con.query('SELECT * FROM class WHERE champ_id='+champ.id+'; SELECT * FROM attributes WHERE champ_id='+champ.id+'; SELECT * FROM throws WHERE champ_id='+champ.id+'; SELECT * FROM wallet WHERE champ_id='+champ.id+';SELECT * FROM equipment WHERE champ_id='+champ.id+';' , function (error, results, fields) {
                 if (error) throw error;
                 let attr = JSON.parse(JSON.stringify(results));
                 champs[i].class = attr[0][0];
                 champs[i].attributes = attr[1][0];
                 champs[i].throw = attr[2][0];
                 champs[i].wallet = attr[3][0];
-
+                champs[i].equipment = attr[4][0];
+                //console.log(champs[i]);
                 
                 i++;
                 
                 if (i == c) {
-                  
-                  //console.log(champs);
 
                   bot_response(args, usr, msag);
                   
@@ -354,36 +257,14 @@ bot.on('message', msag => {
   
 });
 
-  /*
-bot.on('message', msag=> {
-
-  con.query('SELECT id,discord_id FROM user WHERE discord_id=' + msag.author.id + '', function (error, results, fields) {
-          if (error) throw error;
-          // connected!
-          //console.log(results);
-          results = JSON.parse(JSON.stringify(results));
-          usr = results[0];
-    
-          let args = msag.content.substring(PREFIX.length).split(' ');
-          //console.log(usr);
-          //console.log(usr.id);
-          bot_response(args, usr, msag);
-        });
-
-  
-  
-  // WRITE QUERIES TO DEFINE USER AND CHAMPS
-  // THEN THROW THE VARIABLES IN AS PARAMETERS FOR THE BOT_RESPONSE FUNCTION
-});
-  */
 
 function bot_response(args,user,msg) {
   
   const patt = '/(?=.)^\$?(([1-9][0-9]{0,2}(,[0-9]{3})*)|0)?(\.[0-9]{1,2})?$/';
   let ini_val = args[0];
-  
+  //console.log("bot response");
   //msg.reply('bot response');
-  console.log("bot response");
+  //console.log("bot response");
 
     switch(ini_val) {
         
@@ -393,9 +274,9 @@ function bot_response(args,user,msg) {
         
           switch(args[1]) {
              
-            case 'balance':
+            /*case 'balance':
                 msg.reply("\n Wallet \n ============= \n Balance: "+ champ.wallet.coin);
-              break;
+              break;*/
             case 'sendTo':
               msg.reply("\n Wallet \n ============= \n Balance: "+ champ.wallet.coin);
               break;
@@ -420,7 +301,15 @@ function bot_response(args,user,msg) {
           }
           
         } else {
-           msg.reply("Coin: " + champ.wallet.coin + "\n" +"Renown: "+ champ.wallet.renown +" \n" + "Experience: "+ champ.wallet.exp);
+           //msg.reply("Coin: " + champ.wallet.coin + "\n" +"Renown: "+ champ.wallet.renown +" \n" + "Experience: "+ champ.wallet.exp);
+          //console.log(usr,champs);
+           //console.log(champs);
+          
+          let a = lodash.filter(champs,{ 'id': usr.selected_champ });
+          msg.reply("Coin: "+ a[0].wallet.coin);
+          //console.log(a[0].wallet.coin);
+              
+          
         }
         break;
      case 'equipment':
@@ -428,6 +317,15 @@ function bot_response(args,user,msg) {
         switch(args[1]) {
           case 'list':
             msg.reply('list all equipment a character has');
+            let a = lodash.filter(champs,{ 'id': usr.selected_champ });
+            console.log(champs);
+            console.log(a[0].equipment);
+            /*
+            a[0].equipment.forEach(x => {
+              console.log(x.item_id);  
+            });
+            */
+            
             break;
           case 'sell':
             msg.reply('remove equipment from player and add coin to wallet');
@@ -445,9 +343,9 @@ function bot_response(args,user,msg) {
         }
         break;
      case 'characters':
-        //let c = JSON.stringify(champs); msg.reply(c);
-        //msg.reply("something");
+
         list_all_char_stats(champs,msg);
+        
         break;
      case 'character':
         msg.reply("list selected character");
@@ -494,8 +392,7 @@ function list_all_char_stats(chars,msg) {
     });
     
    if(c == i) {
-     
-     //console.log(c,i);
+     //console.log(mes);
      msg.reply(mes);
      
    }
