@@ -6,7 +6,7 @@ let usr; // defined when user interacts with server
 let champs; // defined when user interacts with server
 //let usr_session; 
 
-const token = 'NTkyMDY2MDEzMTM5NDM1NTUw.XTeX9w.i4chLDnc0D4dVc417NOP6ZVgvWQ';
+const token = 'NTkyMDY2MDEzMTM5NDM1NTUw.XUzBKw.2kAjajV10bpEDe4N1ZDRttbeySg';
 
 // bot.on('',);
 const PREFIX = '/';
@@ -204,12 +204,13 @@ bot.on('presenceUpdate', member => {
 
 bot.on('message', msag => {
       
+      console.log("msg event");
       if (msag.author.bot) return;
   
       usr = null;
       champs = null;
 
-      con.query('SELECT id,discord_id,selected_champ FROM user WHERE discord_id=' + msag.author.id + ';', function (error, results, fields) {
+      con.query('SELECT id,discord_id,selected_champ,discord_username FROM user WHERE discord_id=' + msag.author.id + ';', function (error, results, fields) {
       if (error) throw error;
         
         
@@ -262,9 +263,6 @@ function bot_response(args,user,msg) {
   
   const patt = '/(?=.)^\$?(([1-9][0-9]{0,2}(,[0-9]{3})*)|0)?(\.[0-9]{1,2})?$/';
   let ini_val = args[0];
-  //console.log("bot response");
-  //msg.reply('bot response');
-  //console.log("bot response");
 
     switch(ini_val) {
         
@@ -306,7 +304,10 @@ function bot_response(args,user,msg) {
            //console.log(champs);
           
           let a = lodash.filter(champs,{ 'id': usr.selected_champ });
-          msg.reply("Coin: "+ a[0].wallet.coin);
+          console.log(a);
+          console.log(usr);
+          let b = "\n\n Discord User: ("+ usr.discord_username +"#0000) \n Meta Points: ("+ a[0].wallet.meta_points +")\n GM Notes: notes... \n\n Character Name: ("+ a[0].class.name +")\n Currency: "+ a[0].wallet.coin +"\n Renown: "+ a[0].wallet.renown +"\n Experience: "+ a[0].class.experience +"\n Player Notes: notes...";
+          msg.reply(b);
           //console.log(a[0].wallet.coin);
               
           
@@ -400,5 +401,6 @@ function list_all_char_stats(chars,msg) {
   });
   
 }
+
 
 bot.login(token);
