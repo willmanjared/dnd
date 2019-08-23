@@ -6,7 +6,7 @@ let usr; // defined when user interacts with server
 let champs; // defined when user interacts with server
 //let usr_session; 
 
-const token = 'NTkyMDY2MDEzMTM5NDM1NTUw.XUzBKw.2kAjajV10bpEDe4N1ZDRttbeySg';
+const token = 'NTkyMDY2MDEzMTM5NDM1NTUw.XUzQiA.TCVaqpkBzCInD0yeWjSMs8WNIQ8';
 
 // bot.on('',);
 const PREFIX = '/';
@@ -166,7 +166,7 @@ const con = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "password",
-  database: "dnd",
+  database: "eden",
   multipleStatements: true
 });
 
@@ -204,13 +204,18 @@ bot.on('presenceUpdate', member => {
 
 bot.on('message', msag => {
       
-      console.log("msg event");
+      //console.log("msg event");
+  
+  
+      //console.log(msag.author.id);
+  //return;
+  
       if (msag.author.bot) return;
   
       usr = null;
       champs = null;
 
-      con.query('SELECT id,discord_id,selected_champ,discord_username FROM user WHERE discord_id=' + msag.author.id + ';', function (error, results, fields) {
+      con.query('SELECT id,discord_id,selected_champ,discord_username FROM eden_users WHERE discord_id=' + msag.author.id + ';', function (error, results, fields) {
       if (error) throw error;
         
         
@@ -220,7 +225,7 @@ bot.on('message', msag => {
       let args = msag.content.substring(PREFIX.length).split(' ');
                     
                     
-      con.query('SELECT * FROM champ WHERE user_id='+ usr.id, function (error, results, fields) {
+      con.query('SELECT * FROM champs WHERE user_id='+ usr.id, function (error, results, fields) {
           if (error) throw error;
           let i = 0;
           champs = JSON.parse(JSON.stringify(results));
@@ -229,7 +234,7 @@ bot.on('message', msag => {
     
           champs.forEach(champ => {
             
-              con.query('SELECT * FROM class WHERE champ_id='+champ.id+'; SELECT * FROM attributes WHERE champ_id='+champ.id+'; SELECT * FROM throws WHERE champ_id='+champ.id+'; SELECT * FROM wallet WHERE champ_id='+champ.id+';SELECT * FROM equipment WHERE champ_id='+champ.id+';' , function (error, results, fields) {
+              con.query('SELECT * FROM classes WHERE champ_id='+champ.id+'; SELECT * FROM attributes WHERE champ_id='+champ.id+'; SELECT * FROM throws WHERE champ_id='+champ.id+'; SELECT * FROM wallets WHERE champ_id='+champ.id+';SELECT * FROM equipment WHERE champ_id='+champ.id+';' , function (error, results, fields) {
                 if (error) throw error;
                 let attr = JSON.parse(JSON.stringify(results));
                 champs[i].class = attr[0][0];
@@ -306,7 +311,7 @@ function bot_response(args,user,msg) {
           let a = lodash.filter(champs,{ 'id': usr.selected_champ });
           console.log(a);
           console.log(usr);
-          let b = "\n\n Discord User: ("+ usr.discord_username +"#0000) \n Meta Points: ("+ a[0].wallet.meta_points +")\n GM Notes: notes... \n\n Character Name: ("+ a[0].class.name +")\n Currency: "+ a[0].wallet.coin +"\n Renown: "+ a[0].wallet.renown +"\n Experience: "+ a[0].class.experience +"\n Player Notes: notes...";
+          let b = "\n Discord User: ("+ usr.discord_username +"#0000) \n Meta Points: ("+ a[0].wallet.meta_points +")\n GM Notes: notes... \n\n Character Name: ("+ a[0].class.name +")\n Currency: "+ a[0].wallet.coin +"\n Renown: "+ a[0].wallet.renown +"\n Experience: "+ a[0].class.experience +"\n Player Notes: notes...";
           msg.reply(b);
           //console.log(a[0].wallet.coin);
               
