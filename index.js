@@ -6,7 +6,7 @@ let usr; // defined when user interacts with server
 let champs; // defined when user interacts with server
 //let usr_session; 
 
-const token = 'NTkyMDY2MDEzMTM5NDM1NTUw.XUzQiA.TCVaqpkBzCInD0yeWjSMs8WNIQ8';
+const token = 'NTkyMDY2MDEzMTM5NDM1NTUw.XWBzCQ.TZKQxconSbLVoRZGDrrWMXbew94';
 
 // bot.on('',);
 const PREFIX = '/';
@@ -207,16 +207,32 @@ bot.on('message', msag => {
       //console.log("msg event");
   
   
-      //console.log(msag.author.id);
+      //console.log(msag.author);
   //return;
   
       if (msag.author.bot) return;
+  
+  
+      
   
       usr = null;
       champs = null;
 
       con.query('SELECT id,discord_id,selected_champ,discord_username FROM eden_users WHERE discord_id=' + msag.author.id + ';', function (error, results, fields) {
       if (error) throw error;
+        
+        
+        
+        
+        //check if results has user
+        
+        
+            // if not found, connect user to character
+        
+        
+                //if can not be found respond with cannot be found
+        
+        
         
         
       results = JSON.parse(JSON.stringify(results));
